@@ -1,108 +1,52 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
+  AlertTriangle,
+  BarChart3,
+  Bot,
+  Building2,
+  Database,
+  FileText,
+  GitMerge,
   LayoutDashboard,
   Map,
-  BarChart3,
-  CreditCard,
-  Settings,
-  Package,
-  Clock,
-  Users,
-  ParkingCircle,
-  CalendarCheck,
-  Banknote,
-  Receipt,
-  PanelLeftClose,
   PanelLeft,
-  Building2,
-  GitMerge,
-  Link2,
-  AlertTriangle,
+  PanelLeftClose,
+  TrendingUp,
+  Upload,
 } from "lucide-react";
+
 import { cn } from "@/lib/utils";
-import Image from "next/image";
+
+type AppRole = "user" | "admin";
 
 type NavItem = {
   href?: string;
   icon?: React.ComponentType<{ size?: number }>;
   label: string;
   type?: "separator";
-  minRole?: "user" | "agent" | "admin";
+  minRole?: AppRole;
 };
 
-const ROLE_LEVEL: Record<string, number> = {
-  user: 0,
-  agent: 1,
-  admin: 2,
-};
-
-// const menuItems = [
-//     { icon: LayoutDashboard, label: "Tableau de Bord", path: "/" },
-//     { icon: Building2, label: "Entités", path: "/entities" },
-//     { icon: FileSearch, label: "Analyse Croisée", path: "/analysis" },
-//     { icon: Map, label: "Plan Cadastral", path: "/map" },
-//     { icon: Link2, label: "Matching Intelligent", path: "/matching" },
-//     { icon: GitMerge, label: "Gestion Doublons", path: "/doublons" },
-//     { icon: AlertTriangle, label: "Alertes", path: "/alerts" },
-//     { icon: FileText, label: "Rapports", path: "/reports" },
-//     { icon: Upload, label: "Import", path: "/import" },
-//     { icon: Bot, label: "Assistant IA", path: "/assistant" },
-//   ];
+const ROLE_LEVEL: Record<AppRole, number> = { user: 0, admin: 1 };
 
 const links: NavItem[] = [
-  {
-    href: "/dashboard",
-    icon: LayoutDashboard,
-    label: "Tableau de bord",
-    minRole: "admin",
-  },
-  {
-    href: "/entities",
-    icon: Building2,
-    label: "Entités",
-    minRole: "user",
-  },
-  {
-    href: "/analytics",
-    icon: BarChart3,
-    label: "Analytics",
-    minRole: "user",
-  },
-  {
-    href: "/matching",
-    icon: Link2,
-    label: "Matching Intelligent",
-    minRole: "user",
-  },
-  {
-    href: "/doublons",
-    icon: GitMerge,
-    label: "Gestion Doublons",
-    minRole: "user",
-  },
-  {
-    href: "/alerts",
-    icon: AlertTriangle,
-    label: "Alertes",
-    minRole: "user",
-  },
+  { href: "/dashboard", icon: LayoutDashboard, label: "Tableau de bord" },
+  { href: "/entites", icon: Building2, label: "Entités" },
+  { href: "/analyses", icon: BarChart3, label: "Analyses" },
+  { href: "/cadastreMap", icon: Map, label: "Carte cadastrale" },
+  { href: "/Reports", icon: FileText, label: "Rapports" },
+  { href: "/alert", icon: AlertTriangle, label: "Alertes" },
+  { href: "/assistant", icon: Bot, label: "Assistant IA" },
+  { label: "Outils", type: "separator" },
+  { href: "/duplicates", icon: GitMerge, label: "Doublons" },
+  { href: "/MatchingTool", icon: TrendingUp, label: "Matching" },
   { label: "Administration", type: "separator", minRole: "admin" },
-  {
-    href: "/admin/users",
-    icon: Users,
-    label: "Utilisateurs",
-    minRole: "admin",
-  },
-  {
-    href: "/admin/settings",
-    icon: Settings,
-    label: "Administration",
-    minRole: "admin",
-  },
+  { href: "/import", icon: Upload, label: "Import", minRole: "admin" },
 ];
 
 type SidebarProps = {
@@ -114,12 +58,12 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
 
-  const userRole = session?.user?.role ?? "user";
+  const userRole = (session?.user?.role as AppRole) ?? "user";
   const userLevel = ROLE_LEVEL[userRole] ?? 0;
 
   const visibleLinks = links.filter((item) => {
     if (!item.minRole) return true;
-    return userLevel >= (ROLE_LEVEL[item.minRole] ?? 0);
+    return userLevel >= ROLE_LEVEL[item.minRole];
   });
 
   return (
@@ -131,50 +75,41 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
         !open && "max-lg:-translate-x-full",
       )}
     >
-      {/* Logo + Toggle */}
       <div className="flex items-center justify-between px-3 py-3 border-b border-white/20">
         {open ? (
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/dashboard" className="flex items-center gap-3">
             <Image
-              width={20}
-              height={20}
+              width={32}
+              height={32}
               loading="eager"
-                src="/dgid-logo.png"
-              alt="logo DGID"
+              src="/dakar-mairie.png"
+              alt="logo"
               style={{ width: "auto", height: "auto" }}
             />
-            <p className="text-white font-bold text-xs leading-tight">DGID</p>
+            <div>
+              <p className="text-white font-bold text-xs leading-tight">CME — DGID</p>
+              <p className="text-white/60 text-[10px]">Tracker immobilier</p>
+            </div>
           </Link>
         ) : (
-          <Link href="/" className="mx-auto">
-            <Image
-              width={28}
-              height={28}
-              loading="eager"
-              src="/dgid-logo.png"
-              alt="logo DGID"
-              style={{ width: "auto", height: "auto" }}
-            />
+          <Link href="/dashboard" className="mx-auto">
+            <Database size={28} color="white" />
           </Link>
         )}
         <button
           onClick={onToggle}
           className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-          title={open ? "Reduire le menu" : "Agrandir le menu"}
+          title={open ? "Réduire" : "Agrandir"}
         >
           {open ? <PanelLeftClose size={16} /> : <PanelLeft size={16} />}
         </button>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
         {visibleLinks.map((item, i) => {
           if (item.type === "separator") {
             return open ? (
-              <p
-                key={i}
-                className="text-white/40 text-[10px] font-semibold uppercase px-2 pt-4 pb-1"
-              >
+              <p key={i} className="text-white/40 text-[10px] font-semibold uppercase px-2 pt-4 pb-1">
                 {item.label}
               </p>
             ) : (
@@ -202,18 +137,14 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
         })}
       </nav>
 
-      {/* Role indicator */}
       <div className="p-3 border-t border-white/20">
         {open ? (
           <p className="text-white/50 text-[11px]">
-            Connecte :{" "}
-            <span className="text-white font-medium">{userRole}</span>
+            Connecté : <span className="text-white font-medium">{userRole}</span>
           </p>
         ) : (
           <div className="w-6 h-6 mx-auto rounded-full bg-white/20 flex items-center justify-center">
-            <span className="text-white text-[9px] font-bold uppercase">
-              {userRole[0]}
-            </span>
+            <span className="text-white text-[9px] font-bold uppercase">{userRole[0]}</span>
           </div>
         )}
       </div>

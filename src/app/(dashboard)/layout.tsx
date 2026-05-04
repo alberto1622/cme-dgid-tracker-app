@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import Header from "@/components/layout/header";
 import Sidebar from "@/components/layout/Sidebar";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function DashboardLayout({
   children,
@@ -29,6 +30,7 @@ export default function DashboardLayout({
       <div className="flex flex-col flex-1 min-w-0 h-screen">
         <Header />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <Toaster />
       </div>
     </div>
   );
