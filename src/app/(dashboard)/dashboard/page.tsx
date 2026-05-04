@@ -206,7 +206,7 @@ export default function Dashboard() {
           icon={AlertTriangle}
           description="Entités à vérifier"
           color="text-red-600"
-          href="/analysis"
+          href="/analyses"
         />
         <StatCard
           title="ANSD sans CME"
@@ -214,7 +214,7 @@ export default function Dashboard() {
           icon={FileSearch}
           description="Transferts potentiels"
           color="text-yellow-600"
-          href="/analysis"
+          href="/analyses"
         />
         <StatCard
           title="Web sans CME"
@@ -222,7 +222,7 @@ export default function Dashboard() {
           icon={Map}
           description="Contribuables potentiels"
           color="text-orange-600"
-          href="/analysis"
+          href="/analyses"
         />
         <StatCard
           title="Alertes en cours"

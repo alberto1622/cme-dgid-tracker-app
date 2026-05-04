@@ -1,6 +1,6 @@
 import { and, desc, eq, or, sql } from "drizzle-orm";
 import { db } from "@/db/client";
-import { alerts, dataSources, entities, parcelles, reports } from "@/db/schema";
+import { alerts, auditLogs, dataSources, entities, parcelles, properties, reports } from "@/db/schema";
 
 export async function getStatistics() {
   const [row] = await db
@@ -173,6 +173,48 @@ export async function getEntityById(id: number) {
   return row ?? null;
 }
 
+export async function getEntityFullDetails(id: number) {
+  const entity = await getEntityById(id);
+  if (!entity) return null;
+
+  const [props, reps, logs] = await Promise.all([
+    db.select().from(properties).where(eq(properties.entityId, id)).orderBy(desc(properties.createdAt)),
+    db
+      .select({ id: reports.id, type: reports.type, titre: reports.titre, createdAt: reports.createdAt })
+      .from(reports)
+      .where(eq(reports.entityId, id))
+      .orderBy(desc(reports.createdAt)),
+    db
+      .select({ id: auditLogs.id, action: auditLogs.action, createdAt: auditLogs.createdAt })
+      .from(auditLogs)
+      .where(eq(auditLogs.entityId, id))
+      .orderBy(desc(auditLogs.createdAt))
+      .limit(50),
+  ]);
+
+  return { ...entity, properties: props, reports: reps, auditLogs: logs };
+}
+
+export async function createReport(data: {
+  entityId: number;
+  type: "fiche_entite" | "analyse_fiscale" | "inventaire_biens" | "rapport_global";
+  titre: string;
+  contenu: unknown;
+  generatedBy?: number | null;
+}) {
+  const [row] = await db
+    .insert(reports)
+    .values({
+      entityId: data.entityId,
+      type: data.type,
+      titre: data.titre,
+      contenu: data.contenu as never,
+      generatedBy: data.generatedBy ?? null,
+    })
+    .returning({ id: reports.id });
+  return row.id;
+}
+
 export async function getReports() {
   return await db
     .select({
@@ -208,6 +250,39 @@ export async function searchDoublons(query: string, searchBy: "denomination" | "
     .from(entities)
     .where(where)
     .limit(50);
+}
+
+export type MapBounds = { north: number; south: number; east: number; west: number };
+
+export async function getParcellesForMap(bounds?: MapBounds, limit = 5000) {
+  const where = bounds
+    ? sql`${parcelles.centroidLat} IS NOT NULL
+        AND ${parcelles.centroidLng} IS NOT NULL
+        AND ${parcelles.centroidLat}::numeric BETWEEN ${bounds.south} AND ${bounds.north}
+        AND ${parcelles.centroidLng}::numeric BETWEEN ${bounds.west} AND ${bounds.east}`
+    : sql`${parcelles.centroidLat} IS NOT NULL AND ${parcelles.centroidLng} IS NOT NULL`;
+
+  return await db
+    .select({
+      id: parcelles.id,
+      nicad: parcelles.nicad,
+      centroidLat: parcelles.centroidLat,
+      centroidLng: parcelles.centroidLng,
+      commune: parcelles.commune,
+      quartier: parcelles.quartier,
+      surface: parcelles.surface,
+      proprietaire: parcelles.proprietaire,
+      matchScore: parcelles.matchScore,
+      geometry: parcelles.geometry,
+      entityId: parcelles.entityId,
+      entityType: entities.type,
+      entityDenomination: entities.denomination,
+      entityNinea: entities.ninea,
+    })
+    .from(parcelles)
+    .leftJoin(entities, eq(parcelles.entityId, entities.id))
+    .where(where)
+    .limit(limit);
 }
 
 export async function getMatchingStats() {

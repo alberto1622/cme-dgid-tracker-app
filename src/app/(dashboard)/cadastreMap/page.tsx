@@ -1,36 +1,23 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info, Map } from "lucide-react";
+import dynamic from "next/dynamic";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const CadastreMap = dynamic(() => import("@/components/map/CadastreMap"), {
+  ssr: false,
+  loading: () => <Skeleton className="h-[calc(100vh-12rem)] w-full rounded-lg" />,
+});
 
 export default function CadastreMapPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-bold">Plan Cadastral</h1>
-        <p className="text-muted-foreground">Visualisation des parcelles rattachées aux entités</p>
+        <p className="text-muted-foreground">
+          Visualisation des parcelles rattachées aux entités — chargement par zone visible
+        </p>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Map className="h-5 w-5" />
-            Bientôt disponible
-          </CardTitle>
-          <CardDescription>La carte cadastrale nécessite l'installation de Leaflet</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              Installer <code className="font-mono">leaflet react-leaflet</code> et créer une route{" "}
-              <code className="font-mono">/api/map/parcelles</code> retournant les centroïdes/géométries des parcelles
-              dans la zone visible. La carte doit être chargée en <code className="font-mono">dynamic(import, ssr: false)</code>.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
+      <CadastreMap />
     </div>
   );
 }

@@ -82,8 +82,8 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
               width={32}
               height={32}
               loading="eager"
-              src="/dakar-mairie.png"
-              alt="logo"
+              src="/images/dgid-logo.png"
+              alt="logo DGID"
               style={{ width: "auto", height: "auto" }}
             />
             <div>
