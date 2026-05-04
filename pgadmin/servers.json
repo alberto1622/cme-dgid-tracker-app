@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "cme_db",
+      "Group": "Servers",
+      "Host": "cme_db",
+      "Port": 5432,
+      "MaintenanceDB": "cme_dgid_tracker",
+      "Username": "dgid",
+      "PassFile": "/var/lib/pgadmin/pgpass",
+      "SSLMode": "prefer"
+    }
+  }
+}
